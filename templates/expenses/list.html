@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>My Expenses</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th>Status</th><th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for e in expenses %}
+    <tr>
+      <td>{{ e.expense_date }}</td>
+      <td>{{ e.category }}</td>
+      <td>{{ e.description }}</td>
+      <td>{{ e.amount }} {{ e.currency }}{% if e.amount_in_company_currency %} ({{ e.amount_in_company_currency }} {{ current_user.company.default_currency }}){% endif %}</td>
+      <td>{{ e.status.value }}</td>
+      <td>
+        {% if e.status.value == 'pending' %}
+          <a href="/approvals/request/{{ e.id }}">Send for approval</a>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Sign up</h2>
+<form method="post">
+  <label>Full name <input type="text" name="full_name" required></label><br>
+  <label>Company name <input type="text" name="company_name" required></label><br>
+  <label>Country
+    <select name="country" required>
+      {% for c in countries %}
+      <option value="{{ c.name }}">{{ c.name }} ({{ c.currency }})</option>
+      {% endfor %}
+    </select>
+  </label><br>
+  <label>Email <input type="email" name="email" required></label><br>
+  <label>Password <input type="password" name="password" required></label><br>
+  <button type="submit">Create company and admin</button>
+</form>
+<p>Have an account? <a href="/auth/login">Login</a></p>
+{% endblock %}
