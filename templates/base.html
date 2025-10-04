@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Expense Manager</title>
+  <link rel="stylesheet" href="/static/css/styles.css" />
+</head>
+<body>
+  <nav>
+    <a href="/">Dashboard</a>
+    <a href="/expenses/">My Expenses</a>
+    <a href="/expenses/submit">Submit Expense</a>
+    <a href="/approvals/">Approvals</a>
+    <a href="/admin/">Admin</a>
+    <a href="/auth/logout">Logout</a>
+  </nav>
+  <main>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class="flash">
+          {% for msg in messages %}
+          <li>{{ msg }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

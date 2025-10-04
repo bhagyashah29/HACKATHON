@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Admin Dashboard</h2>
+
+<h3>Users</h3>
+<form method="post" action="/admin/users/create">
+  <input type="text" name="full_name" placeholder="Full name" required>
+  <input type="email" name="email" placeholder="Email" required>
+  <input type="password" name="password" placeholder="Temp password" required>
+  <select name="role">
+    <option value="employee">Employee</option>
+    <option value="manager">Manager</option>
+  </select>
+  <select name="manager_id">
+    <option value="">No manager</option>
+    {% for u in users if u.role.value == 'manager' %}
+    <option value="{{ u.id }}">{{ u.full_name }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit">Create User</button>
+</form>
+
+<table>
+  <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Manager</th><th>Manager Approver</th><th>Actions</th></tr></thead>
+  <tbody>
+    {% for u in users %}
+    <tr>
+      <td>{{ u.full_name }}</td>
+      <td>{{ u.email }}</td>
+      <td>{{ u.role.value }}</td>
+      <td>{{ u.manager.full_name if u.manager else '-' }}</td>
+      <td>
+        <form method="post" action="/admin/users/toggle_manager_approver">
+          <input type="hidden" name="user_id" value="{{ u.id }}">
+          <label>
+            <input type="checkbox" name="is_manager_approver" {% if u.is_manager_approver %}checked{% endif %} onchange="this.form.submit()"> Required
+          </label>
+        </form>
+      </td>
+      <td>
+        <form method="post" action="/admin/users/update_role" style="display:inline">
+          <input type="hidden" name="user_id" value="{{ u.id }}">
+          <select name="role">
+            <option value="employee" {% if u.role.value=='employee' %}selected{% endif %}>Employee</option>
+            <option value="manager" {% if u.role.value=='manager' %}selected{% endif %}>Manager</option>
+            <option value="admin" {% if u.role.value=='admin' %}selected{% endif %}>Admin</option>
+          </select>
+          <button>Update Role</button>
+        </form>
+        <form method="post" action="/admin/users/update_manager" style="display:inline">
+          <input type="hidden" name="user_id" value="{{ u.id }}">
+          <select name="manager_id">
+            <option value="">No manager</option>
+            {% for m in users if m.role.value == 'manager' %}
+            <option value="{{ m.id }}" {% if u.manager and u.manager.id==m.id %}selected{% endif %}>{{ m.full_name }}</option>
+            {% endfor %}
+          </select>
+          <button>Update Manager</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h3>Approval Steps</h3>
+<form method="post" action="/admin/approval_steps/create">
+  <input type="text" name="name" placeholder="Step name" required>
+  <input type="number" name="sequence" placeholder="Order" required>
+  <select name="approver_user_id">
+    <option value="">Select approver (optional)</option>
+    {% for u in users %}
+    <option value="{{ u.id }}">{{ u.full_name }} ({{ u.role.value }})</option>
+    {% endfor %}
+  </select>
+  <button>Add Step</button>
+</form>
+
+<ol>
+  {% for s in steps %}
+  <li>{{ s.sequence }}. {{ s.name }} {% if s.approver_user %}- {{ s.approver_user.full_name }}{% endif %}</li>
+  {% endfor %}
+</ol>
+
+<h3>Approval Rules</h3>
+<form method="post" action="/admin/approval_rules/create">
+  <select name="rule_type">
+    <option value="percentage">Percentage</option>
+    <option value="specific_approver">Specific Approver</option>
+    <option value="hybrid">Hybrid</option>
+  </select>
+  <input type="number" name="percentage_threshold" placeholder="Threshold %">
+  <select name="specific_approver_user_id">
+    <option value="">CFO/Specific approver (optional)</option>
+    {% for u in users %}
+    <option value="{{ u.id }}">{{ u.full_name }}</option>
+    {% endfor %}
+  </select>
+  <button>Add Rule</button>
+</form>
+
+<ul>
+  {% for r in rules %}
+  <li>{{ r.rule_type.value }}{% if r.percentage_threshold %} - {{ r.percentage_threshold }}%{% endif %}{% if r.specific_approver_user %} - {{ r.specific_approver_user.full_name }}{% endif %}</li>
+  {% endfor %}
+</ul>
+
+<h3>All Company Expenses</h3>
+<table>
+  <thead>
+    <tr>
+      <th>Employee</th><th>Date</th><th>Category</th><th>Amount</th><th>Status</th><th>Override</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for e in expenses %}
+    <tr>
+      <td>{{ e.user.full_name }}</td>
+      <td>{{ e.expense_date }}</td>
+      <td>{{ e.category }}</td>
+      <td>{{ e.amount }} {{ e.currency }}</td>
+      <td>{{ e.status.value }}</td>
+      <td>
+        <form method="post" action="/admin/expenses/override">
+          <input type="hidden" name="expense_id" value="{{ e.id }}">
+          <button name="action" value="approve">Approve</button>
+          <button name="action" value="reject">Reject</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
